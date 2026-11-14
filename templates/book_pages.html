@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}{{ book.title }} · Webook{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/creator.css' %}">
+<link rel="stylesheet" href="{% static 'css/reader.css' %}">
+{% endblock %}
+
+{% block content %}
+<header class="editor-head">
+  <div>
+    <h1>{{ book.title }}</h1>
+    <p>{{ book.description }}</p>
+  </div>
+  <div class="editor-actions">
+    <button class="btn btn--rose" type="button" data-open-dialog="#share-dialog">♥ Share</button>
+    <button class="btn" type="button" data-open-dialog="#preview-dialog">Preview</button>
+    <a class="btn btn--ghost" href="{% url 'edit_book' book.id %}">Edit Webook</a>
+    <a class="btn btn--danger" href="{% url 'delete_book' book.id %}"
+       data-confirm="Delete “{{ book.title }}” and all its pages and photos?">Delete Webook</a>
+  </div>
+</header>
+
+<h2 class="section-title">Pages</h2>
+
+<ol class="page-list">
+  {% for page in pages %}
+  <li class="page-row">
+    <span class="page-row__no">{{ forloop.counter|stringformat:"02d" }}</span>
+    <div>
+      <h3>{{ page.title }}</h3>
+      <p class="page-row__preview">{{ page.content|truncatewords:28 }}</p>
+
+      <div class="page-row__photos">
+        {% for photo in page.photos.all %}
+          <img src="{{ photo.image.url }}" alt="{{ photo.caption|default:page.title }}">
+        {% endfor %}
+      </div>
+
+      <div class="page-row__actions">
+        <a class="btn btn--rose btn--small" href="{% url 'edit_page' page.id %}">Edit</a>
+        <a class="btn btn--ghost btn--small" href="{% url 'add_photo' page.id %}">Add Photo</a>
+        <a class="btn btn--danger btn--small" href="{% url 'delete_page' page.id %}"
+           data-confirm="Delete this page and its photos?">Delete</a>
+      </div>
+    </div>
+  </li>
+  {% empty %}
+  <li class="empty">This Webook has no pages yet. Add the first memory.</li>
+  {% endfor %}
+</ol>
+
+<a class="btn" href="{% url 'create_page' book.id %}">+ Add Page</a>
+<dialog class="share-dialog" id="share-dialog" aria-labelledby="share-title">
+  <button class="share-dialog__close" type="button" data-close-dialog aria-label="Close">×</button>
+  <span class="heart-big" aria-hidden="true">♥</span>
+  <h2 id="share-title">Share this Webook</h2>
+  <p class="form-card__note">Send both to the person you made it for. They open the link, then enter the passcode.</p>
+
+  <div class="share-box">
+    <span class="share-box__label">Link</span>
+    <code id="share-link">{{ request.scheme }}://{{ request.get_host }}{% url 'receiver:unlock' book.slug %}</code>    <button class="btn btn--rose btn--small" type="button" data-copy="#share-link">Copy</button>
+  </div>
+
+  <div class="share-box">
+    <span class="share-box__label">Passcode</span>
+    <code id="share-passcode">{{ book.passcode }}</code>
+    <button class="btn btn--rose btn--small" type="button" data-copy="#share-passcode">Copy</button>
+  </div>
+
+  {% if not book.is_published %}
+  <p class="share-dialog__warn">This Webook is still a draft. Publish it from Edit Webook so your reader can open it.</p>
+  {% endif %}
+</dialog>
+<dialog class="preview-dialog" id="preview-dialog" aria-label="Preview of {{ book.title }}">
+  <div class="preview-stage">
+    <div class="reader" data-reader>
+
+      <div class="reader-bar">
+        <span class="reader-bar__title">Preview · {{ book.title }}</span>
+        <button class="btn btn--ghost btn--small" type="button" data-close-dialog>Close preview</button>
+      </div>
+
+      <div class="book" data-book>
+        <div class="book__base" aria-hidden="true"></div>
+        <div class="book__back" aria-hidden="true">♥</div>
+      </div>
+
+      <nav class="reader-nav" aria-label="Turn pages">
+        <button class="reader-nav__btn" type="button" data-prev aria-label="Previous page">←</button>
+        <span class="reader-nav__status" data-status aria-live="polite"></span>
+        <button class="reader-nav__btn" type="button" data-next aria-label="Next page">→</button>
+      </nav>
+      <p class="reader-hint">Swipe or tap the edges to turn the page</p>
+
+      <div hidden data-source>
+        <div data-cover-src>
+          <p class="cover__kicker">A Webook</p>
+          <h1 class="cover__title">{{ book.title }}</h1>
+          <p class="cover__desc">{{ book.description }}</p>
+          <span class="ornament">♥</span>
+        </div>
+        {% for page in pages %}
+        <article data-page-src>
+          <div class="page-photos" data-part="photos" data-count="{{ page.photos.all|length }}">
+            {% for photo in page.photos.all %}
+            <figure>
+              <img src="{{ photo.image.url }}" alt="{{ photo.caption|default:page.title }}">
+              {% if photo.caption %}<figcaption>{{ photo.caption }}</figcaption>{% endif %}
+            </figure>
+            {% endfor %}
+          </div>
+          <h2 data-part="title">{{ page.title }}</h2>
+          <div class="prose" data-part="text">{{ page.content|linebreaks }}</div>
+        </article>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</dialog>
+{% endblock %}
+
+{% block extra_js %}<script src="{% static 'js/reader.js' %}" defer></script>{% endblock %}

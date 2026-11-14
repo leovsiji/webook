@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}Add photo · Webook{% endblock %}
+
+{% block content %}
+<div class="form-card">
+    <h1>Add a photo</h1>
+
+    <p class="form-card__note">
+        It will appear on "{{ page.title }}".
+    </p>
+
+    {% if page.photos.all %}
+    <div class="form-photos">
+        {% for photo in page.photos.all %}
+        <div>
+            <img src="{{ photo.image.url }}" alt="{{ photo.caption|default:page.title }}">
+
+            <form method="POST" action="{% url 'delete_photo' photo.id %}">
+                {% csrf_token %}
+                <button type="submit">Delete photo</button>
+            </form>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.as_p }}
+
+        <div class="form-actions">
+            <button type="submit">Upload photo</button>
+            <a href="{% url 'book_pages' page.book.id %}">Back to book</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

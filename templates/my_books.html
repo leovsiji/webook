@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}My Webooks · Webook{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/creator.css' %}">{% endblock %}
+
+{% block content %}
+<header class="page-head">
+  <h1>My Webooks</h1>
+  <p>Every memory book you have made. Open one to add pages and photos.</p>
+</header>
+
+<section class="shelf">
+  {% for book in books %}
+  <article class="webook-card">
+    <a class="webook-card__cover" href="{% url 'book_pages' book.id %}" aria-label="Open {{ book.title }}">
+      <span class="webook-card__spine" aria-hidden="true"></span>
+      <span>
+        <h2>{{ book.title }}</h2>
+        <p>{{ book.description|truncatewords:18 }}</p>
+      </span>
+      <span class="webook-card__meta">{{ book.pages.count }} page{{ book.pages.count|pluralize }}</span>
+    </a>
+    <div class="webook-card__foot">
+      <span class="status {% if book.is_published %}status--live{% endif %}">
+        {% if book.is_published %}Published{% else %}Draft{% endif %}
+      </span>
+      <a class="btn btn--small" href="{% url 'book_pages' book.id %}">Open</a>
+    </div>
+  </article>
+  {% empty %}
+  <p class="empty">You have not made a Webook yet. Start your first one.</p>
+  {% endfor %}
+
+  <a class="webook-card webook-card--new" href="{% url 'create_book' %}">+ Create New Webook</a>
+</section>
+{% endblock %}

@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}New page · Webook{% endblock %}
+
+{% block content %}
+<div class="form-card">
+  <h1>Add a page</h1>
+  <p class="form-card__note">Write the memory first. You can add photos once the page exists.</p>
+
+  {% if error %}<ul class="errorlist"><li>{{ error }}</li></ul>{% endif %}
+
+  <form method="POST">
+    {% csrf_token %}
+    {% if form %}
+      {{ form.as_p }}
+    {% else %}
+      <p><label for="title">Page title</label>
+         <input type="text" id="title" name="title" required autofocus></p>
+      <p><label for="content">Memory</label>
+         <textarea id="content" name="content" rows="8"></textarea></p>
+    {% endif %}
+    <div class="form-actions">
+      <button type="submit">Save page</button>
+      <a href="{% if book %}{% url 'book_pages' book.id %}{% else %}{% url 'my_books' %}{% endif %}">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

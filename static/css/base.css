@@ -1,0 +1,159 @@
+/* ==========================================================
+   Webook — design tokens + shared components
+   Palette: Silk Milk #F4ECEB · Kiss Rose #B76E79 · deep wine
+   ========================================================== */
+:root {
+  --wine: #4a0a12;
+  --wine-deep: #350710;
+  --wine-soft: #6b1d28;
+  --wine-lift: #7d2a35;
+
+  --rose: #B76E79;
+  --rose-deep: #9c5360;
+  --rose-soft: #d9a4ab;
+
+  --milk: #F4ECEB;
+  --milk-warm: #ebdcd6;
+
+  --ink: #4a1a20;
+  --ink-soft: #7a4a50;
+
+  --text: #F4ECEB;
+  --text-soft: #dcb9bd;
+
+  --font-display: "Inter Tight", "Helvetica Neue", Arial, sans-serif;
+  --font-body: "EB Garamond", Georgia, serif;
+  --font-hand: "Caveat", "Segoe Script", cursive;
+
+  --noise: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='2'/><feColorMatrix values='0 0 0 0 .4  0 0 0 0 .2  0 0 0 0 .2  0 0 0 .12 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  --dots-rose: radial-gradient(circle at 11px 11px, rgba(183,110,121,.3) 1.3px, transparent 1.8px) 0 0 / 22px 22px;
+  --dots-milk: radial-gradient(circle at 11px 11px, rgba(244,236,235,.16) 1.3px, transparent 1.8px) 0 0 / 22px 22px;
+
+  --paper-milk: var(--noise), var(--dots-rose),
+    radial-gradient(ellipse at 50% 30%, #faf4f2 0%, #F4ECEB 60%, #e9d9d3 100%);
+  --paper-wine: var(--noise), var(--dots-milk),
+    linear-gradient(160deg, #7b2833, #5c1520 60%, #4a0f18);
+  --cover-rose: var(--noise), linear-gradient(135deg, #cb858f, #B76E79 48%, #9c5360);
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0; min-height: 100vh;
+  background-color: var(--wine);
+  background-image: radial-gradient(circle, rgba(244,236,235,.07) 1px, transparent 1.6px);
+  background-size: 26px 26px;
+  color: var(--text);
+  font-family: var(--font-body); font-size: 1.15rem; line-height: 1.6;
+}
+
+h1, h2, h3 {
+  font-family: var(--font-display); font-weight: 800;
+  letter-spacing: -.03em; line-height: 1.02; margin: 0 0 .5em;
+}
+h1 { font-size: clamp(2.4rem, 8vw, 4.6rem); }
+h2 { font-size: clamp(1.5rem, 4vw, 2.1rem); }
+
+a { color: var(--rose-soft); }
+img { max-width: 100%; }
+:focus-visible { outline: 3px solid var(--rose-soft); outline-offset: 3px; }
+
+.container { width: min(1100px, 92vw); margin: 0 auto; padding: 2rem 0 4rem; }
+
+/* ---------- top bar ---------- */
+.topbar {
+  display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+  padding: .8rem 4vw; background: var(--wine-deep);
+  border-bottom: 1px solid rgba(217,164,171,.2);
+}
+.topbar__brand {
+  font-family: var(--font-display); font-weight: 800; font-size: 1.6rem;
+  letter-spacing: -.04em; color: var(--rose-soft); text-decoration: none;
+}
+.topbar__brand::after { content: " ♥"; color: var(--rose); font-size: .8em; }
+.topbar__nav { display: flex; gap: .5rem; flex-wrap: wrap; }
+
+/* ---------- buttons ---------- */
+.btn {
+  display: inline-block; cursor: pointer; text-decoration: none;
+  font: 800 .95rem/1 var(--font-display); letter-spacing: -.01em;
+  padding: .85em 1.3em; border-radius: 999px; border: 2px solid var(--milk);
+  background: var(--milk); color: var(--wine);
+  transition: transform .15s ease, background .15s ease;
+}
+.btn:hover { transform: translateY(-1px); background: #fff; }
+.btn--rose { background: var(--rose); border-color: var(--rose); color: var(--milk); }
+.btn--rose:hover { background: var(--rose-deep); }
+.btn--ghost { background: transparent; color: var(--milk); border-color: rgba(244,236,235,.6); }
+.btn--ghost:hover { background: rgba(244,236,235,.12); }
+.btn--danger { background: transparent; border-color: var(--rose); color: var(--rose-soft); }
+.btn--danger:hover { background: var(--rose); color: var(--milk); }
+.btn--small { font-size: .85rem; padding: .65em 1.05em; }
+
+/* ---------- messages ---------- */
+.messages { list-style: none; margin: 0 0 1.5rem; padding: 0; }
+.messages li { background: var(--milk); color: var(--wine); padding: .8rem 1.1rem; border-radius: 10px; margin-bottom: .5rem; }
+
+/* ---------- forms: wrap any existing Django form in <div class="form-card"> ---------- */
+.form-card {
+  position: relative; max-width: 620px; margin: 1rem auto;
+  padding: clamp(1.6rem, 5vw, 2.6rem);
+  background: var(--paper-milk); color: var(--ink);
+  border-radius: 6px; box-shadow: 8px 10px 0 var(--wine-deep);
+}
+.form-card::before {                       /* washi tape */
+  content: ""; position: absolute; top: -14px; left: 50%; width: 110px; height: 28px;
+  transform: translateX(-50%) rotate(-2deg); background: rgba(183,110,121,.78);
+}
+.form-card h1, .form-card h2 { color: var(--wine-soft); font-size: clamp(1.8rem, 6vw, 2.6rem); }
+.form-card label { display: block; font: 800 .95rem var(--font-display); letter-spacing: -.01em; margin-bottom: .3rem; }
+.form-card p { margin: 0 0 1.1rem; }
+.form-card input[type="text"], .form-card input[type="password"], .form-card input[type="email"],
+.form-card input[type="number"], .form-card textarea, .form-card select {
+  width: 100%; padding: .75rem .9rem; font: inherit; color: var(--ink);
+  background: #fff9f7; border: 1.5px solid var(--rose-soft); border-radius: 8px;
+}
+.form-card input:focus, .form-card textarea:focus, .form-card select:focus { outline: 3px solid rgba(183,110,121,.45); border-color: var(--rose); }
+.form-card textarea { min-height: 12rem; resize: vertical; }
+.form-card input[type="file"] { width: 100%; padding: .5rem 0; }
+.form-card button, .form-card input[type="submit"] {
+  cursor: pointer; font: 800 1rem/1 var(--font-display); letter-spacing: -.01em;
+  padding: .9em 1.5em; border-radius: 999px; border: 2px solid var(--rose);
+  background: var(--rose); color: var(--milk);
+}
+.form-card button:hover, .form-card input[type="submit"]:hover { background: var(--rose-deep); }
+.form-card a { color: var(--rose-deep); }
+.form-card .helptext, .form-card .errorlist { font-size: .95rem; color: var(--ink-soft); }
+.form-card .errorlist { list-style: none; padding: 0; color: #a02f3b; font-weight: 700; }
+
+@media (prefers-reduced-motion: reduce) {
+  * { transition-duration: .01ms !important; animation-duration: .01ms !important; }
+}
+
+/* ---------- form extras ---------- */
+.form-card__note { margin: -.2rem 0 1.4rem; font-style: italic; color: var(--ink-soft); }
+.form-card .check { display: flex; align-items: center; gap: .6rem; }
+.form-card .check label { margin: 0; }
+.form-card input[type="checkbox"] { width: 1.25rem; height: 1.25rem; accent-color: var(--rose); }
+.form-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 1rem; margin-top: 1.4rem; }
+.form-actions a { font: 800 .95rem var(--font-display); letter-spacing: -.01em; }
+.form-switch { margin: 1.4rem 0 0; font-style: italic; color: var(--ink-soft); }
+
+.form-photos { display: flex; flex-wrap: wrap; gap: .8rem; margin: 0 0 1.4rem; }
+.form-photos img {
+  width: 74px; height: 74px; object-fit: cover; background: #fff; padding: 3px 3px 10px;
+  box-shadow: 0 2px 6px rgba(74,10,18,.35); transform: rotate(-2deg);
+}
+.form-photos img:nth-child(even) { transform: rotate(2deg); }
+
+.share-box {
+  display: flex; flex-wrap: wrap; align-items: center; gap: .6rem;
+  margin: 0 0 1.2rem; padding: .8rem 1rem; background: #fff9f7;
+  border: 1.5px dashed var(--rose); border-radius: 8px; word-break: break-all;
+}
+.share-box__label { flex-basis: 100%; font: 800 .85rem var(--font-display); color: var(--rose-deep); }
+.share-box code { flex: 1; font: 600 1rem var(--font-body); color: var(--wine-soft); }
+.form-card--center { text-align: center; }
+.form-card--center .form-actions { justify-content: center; }
+.heart-big { display: block; font-size: 3rem; line-height: 1; color: var(--rose); margin-bottom: .4rem; }

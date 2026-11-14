@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}{{ book.title }} · Webook{% endblock %}
+{% block body_class %}reader{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/reader.css' %}">{% endblock %}
+{% block nav %}{% endblock %}
+{% block main_class %}reader-main{% endblock %}
+{% block messages %}{% endblock %}
+
+{% block content %}
+<div class="form-card form-card--center" style="width: min(92vw, 460px);">
+  <span class="heart-big" aria-hidden="true">♥</span>
+  <h1>{{ book.title }}</h1>
+  <p class="form-card__note">This Webook is protected by a passcode.</p>
+
+  {% if error %}<ul class="errorlist"><li>{{ error }}</li></ul>{% endif %}
+  {% if messages %}<ul class="errorlist">{% for message in messages %}<li>{{ message }}</li>{% endfor %}</ul>{% endif %}
+
+  <form method="POST">
+    {% csrf_token %}
+    <p><input type="password" name="passcode" placeholder="Enter passcode" autocomplete="off" required autofocus></p>
+    <div class="form-actions"><button type="submit">Open Webook</button></div>
+  </form>
+</div>
+{% endblock %}

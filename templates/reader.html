@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}{{ book.title }} · Webook{% endblock %}
+{% block body_class %}reader{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/reader.css' %}">{% endblock %}
+{% block nav %}{% endblock %}
+{% block main_class %}reader-main{% endblock %}
+{% block messages %}{% endblock %}
+
+{% block content %}
+<div class="reader" data-reader>
+
+  <div class="reader-bar">
+    <span class="reader-bar__title">{{ book.title }}</span>
+    <!-- music mute / unmute button goes here later -->
+    <div class="reader-bar__music" data-music-slot></div>
+  </div>
+
+  <div class="book" data-book>
+    <div class="book__base" aria-hidden="true"></div>
+    <div class="book__back" aria-hidden="true">♥</div>
+    <!-- reader.js builds the leaves here from the real data below -->
+  </div>
+
+  <nav class="reader-nav" aria-label="Turn pages">
+    <button class="reader-nav__btn" type="button" data-prev aria-label="Previous page">←</button>
+    <span class="reader-nav__status" data-status aria-live="polite"></span>
+    <button class="reader-nav__btn" type="button" data-next aria-label="Next page">→</button>
+  </nav>
+  <p class="reader-hint">Swipe or tap the edges to turn the page</p>
+
+  {# Real Django data. reader.js copies this into the book; it is hidden on screen. #}
+  <div hidden data-source>
+    <div data-cover-src>
+      <p class="cover__kicker">A Webook</p>
+      <h1 class="cover__title">{{ book.title }}</h1>
+      <p class="cover__desc">{{ book.description }}</p>
+      <span class="ornament">♥</span>
+    </div>
+
+    {% for page in pages %}
+    <article data-page-src>
+      <div class="page-photos" data-part="photos" data-count="{{ page.photos.all|length }}">
+        {% for photo in page.photos.all %}
+        <figure>
+          <img src="{{ photo.image.url }}" alt="{{ photo.caption|default:page.title }}" loading="lazy">
+          {% if photo.caption %}<figcaption>{{ photo.caption }}</figcaption>{% endif %}
+        </figure>
+        {% endfor %}
+      </div>
+      <h2 data-part="title">{{ page.title }}</h2>
+      <div class="prose" data-part="text">{{ page.content|linebreaks }}</div>
+    </article>
+    {% endfor %}
+  </div>
+
+  <noscript><p class="reader-noscript">Please enable JavaScript to open this Webook.</p></noscript>
+</div>
+{% endblock %}
+
+{% block extra_js %}<script src="{% static 'js/reader.js' %}" defer></script>{% endblock %}

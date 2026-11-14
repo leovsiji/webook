@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Webook created · Webook{% endblock %}
+
+{% block content %}
+<div class="form-card form-card--center">
+  <span class="heart-big" aria-hidden="true">♥</span>
+  <h1>Your Webook is ready</h1>
+  <p class="form-card__note">“{{ book.title }}” has been created. Add pages and photos, then share it.</p>
+
+  {% if book.slug %}
+  <div class="share-box">
+    <span class="share-box__label">Share link</span>
+    <code id="share-link">{{ request.scheme }}://{{ request.get_host }}{% url 'reader' book.slug %}</code>
+    <button class="btn btn--rose btn--small" type="button" data-copy="#share-link">Copy</button>
+  </div>
+  {% endif %}
+
+  {% if book.passcode %}
+  <div class="share-box">
+    <span class="share-box__label">Passcode</span>
+    <code id="share-passcode">{{ book.passcode }}</code>
+    <button class="btn btn--rose btn--small" type="button" data-copy="#share-passcode">Copy</button>
+  </div>
+  {% endif %}
+
+  <div class="form-actions">
+    <a class="btn" href="{% url 'book_pages' book.id %}">Add pages</a>
+    <a href="{% url 'my_books' %}">My Webooks</a>
+  </div>
+</div>
+{% endblock %}

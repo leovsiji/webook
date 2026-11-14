@@ -1,0 +1,43 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#4a0a12">
+  <title>{% block title %}Webook{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@700;800&family=EB+Garamond:ital,wght@0,400;0,600;1,400&family=Caveat:wght@500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'css/base.css' %}">
+  {% block extra_css %}{% endblock %}
+</head>
+<body class="{% block body_class %}{% endblock %}">
+  {% block nav %}
+  <header class="topbar">
+    <a class="topbar__brand" href="{% if user.is_authenticated %}{% url 'my_books' %}{% else %}{% url 'login' %}{% endif %}">Webook</a>
+    <nav class="topbar__nav">
+      {% if user.is_authenticated %}
+        <a class="btn btn--ghost btn--small" href="{% url 'my_books' %}">My Webooks</a>
+        <a class="btn btn--small" href="{% url 'create_book' %}">New Webook</a>
+      {% else %}
+        <a class="btn btn--ghost btn--small" href="{% url 'login' %}">Log in</a>
+        <a class="btn btn--small" href="{% url 'register' %}">Register</a>
+      {% endif %}
+    </nav>
+  </header>
+  {% endblock %}
+
+  <main class="{% block main_class %}container{% endblock %}">
+    {% block messages %}
+      {% if messages %}
+        <ul class="messages">{% for message in messages %}<li>{{ message }}</li>{% endfor %}</ul>
+      {% endif %}
+    {% endblock %}
+    {% block content %}{% endblock %}
+  </main>
+
+  <script src="{% static 'js/creator.js' %}" defer></script>
+  {% block extra_js %}{% endblock %}
+</body>
+</html>
