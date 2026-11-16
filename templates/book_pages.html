@@ -46,6 +46,14 @@
 
   <div class="editor-actions">
     <button class="btn btn--rose" type="button" data-open-dialog="#share-dialog">♥ Share</button>
+    <form method="POST" action="{% url 'receiver:publish' book.id %}">
+      {% csrf_token %}
+      {% if book.status %}
+          <button class="btn btn--danger" type="submit" name="action" value="unpublish">Unpublish</button>
+      {% else %}
+          <button class="btn btn--rose" type="submit" name="action" value="publish">Publish</button>
+      {% endif %}
+    </form>
     <button class="btn" type="button" data-open-dialog="#preview-dialog">Preview</button>
     <a class="btn btn--ghost" href="{% url 'upload_music' book.id %}">♪ Manage Music</a>
     <a class="btn btn--ghost" href="{% url 'edit_book' book.id %}">Edit Webook</a>
@@ -102,7 +110,7 @@
     <button class="btn btn--rose btn--small" type="button" data-copy="#share-passcode">Copy</button>
   </div>
 
-  {% if not book.is_published %}
+  {% if not book.status %}
   <p class="share-dialog__warn">This Webook is still a draft. Publish it from Edit Webook so your reader can open it.</p>
   {% endif %}
 </dialog>
