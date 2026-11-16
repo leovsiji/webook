@@ -39,3 +39,11 @@ htmlcov/
 *.swp
 .DS_Store
 Thumbs.db
+
+.ok/
+__pycache__/
+*.pyc
+db.sqlite3
+db.sqlite3.backup
+data.json
+staticfiles/
