@@ -48,8 +48,7 @@ def unlock_book(request, slug):
         if valid:
             request.session.cycle_key()
             request.session[f"webook_unlocked_{book.id}"] = True
-
-            return redirect("receiver:read", slug=book.slug)
+            return read_book(request, slug)
 
         return render(request, "receiver/unlock.html", {
             "book": book,

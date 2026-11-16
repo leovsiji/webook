@@ -5,7 +5,22 @@
    whole book turns to the left like an open book.
    --u = 1% of book width (set in reader.js)
    ========================================================== */
-body.read {
+
+/* ---------- cover colour (step 2) ----------
+   Every cover reads --cover-c (the book's colour) and --cover-ink (text on it).
+   reader.js sets both from data-cover="{{ book.cover_color }}". */
+.reader, .read {
+  --cover-c: #B76E79;                 /* default rose until JS sets the book's colour */
+  --cover-ink: #F4ECEB;               /* light text, or dark on pale covers */
+  --cover-rose: var(--noise), linear-gradient(135deg,
+      color-mix(in srgb, var(--cover-c) 80%, white), var(--cover-c) 48%,
+      color-mix(in srgb, var(--cover-c) 78%, black));
+}
+@supports not (color: color-mix(in srgb, red, blue)) {
+  .reader, .read { --cover-rose: var(--noise), linear-gradient(135deg, var(--cover-c), var(--cover-c)); }
+}
+
+body.read, body.reader {
   background-color: var(--wine);
   background-image:
     radial-gradient(circle, rgba(244,236,235,.07) 1px, transparent 1.6px),
@@ -13,12 +28,12 @@ body.read {
   background-size: 26px 26px, auto;
   overflow-x: hidden;
 }
-.read-main {
+.read-main, .reader-main {
   min-height: 100vh; min-height: 100dvh;
   display: flex; align-items: center; justify-content: center;
   padding: .8rem .5rem 1.2rem;
 }
-.read {
+.read, .reader {
   --box-w: 100vw;
   --box-h: 100vh;                        /* the box the book must fit in */
   --chrome: 190px;                       /* space used by bar + buttons */
@@ -26,18 +41,20 @@ body.read {
   --fit: .94;                            /* how much of the box the book may fill */
   display: flex; flex-direction: column; align-items: center; gap: 1rem; width: 100%; }
 
-.read-bar {
+.read-bar, .reader-bar {
   width: min(94vw, 1000px); min-height: 2.4rem;
   display: flex; align-items: center; justify-content: space-between; gap: 1rem;
 }
-.read-bar__title {
+.read-bar__title, .reader-bar__title {
   font: 800 1.3rem/1 var(--font-display); letter-spacing: -.03em; color: var(--rose-soft);
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
 
 [hidden] { display: none !important; }   /* the data block in reader.html */
-.reader-bar__music { display: flex; align-items: center; gap: .5rem; }   /* mute button lives here later */
-
+.reader-bar__music audio {
+    width: min(220px, 48vw);
+    height: 36px;
+}
 /* ---------- the book ---------- */
 .book {
   --u: 9px; --k: 1.55; --title: max(20px, calc(var(--u) * 4.4));
@@ -62,7 +79,7 @@ body.read {
 .book__back, .leaf { position: absolute; top: 0; left: 50%; width: 50%; height: 100%; }
 .book__back {
   display: grid; place-items: center; border-radius: 0 12px 12px 0;
-  background: var(--cover-rose); color: var(--milk); font-size: calc(var(--u) * 7);
+  background: var(--cover-rose); color: var(--cover-ink); font-size: calc(var(--u) * 7);
 }
 
 .leaf { transform-origin: left center; transform-style: preserve-3d; transition: transform var(--flip); }
@@ -114,7 +131,7 @@ body.read {
 
 /* ---------- cover ---------- */
 .cover {
-  background: var(--cover-rose); color: var(--milk); cursor: pointer;
+  background: var(--cover-rose); color: var(--cover-ink); cursor: pointer;
   border-radius: 4px 14px 14px 4px;
   box-shadow: inset 0 0 calc(var(--u) * 2.5) rgba(74,10,18,.4);
   font-family: var(--font-body); font-size: max(11px, calc(var(--u) * var(--k)));
@@ -126,15 +143,16 @@ body.read {
 .cover::after {
   content: ""; position: absolute; inset: 5.5%; pointer-events: none;
   border: 1.5px dashed rgba(244,236,235,.65); border-radius: 3px 10px 10px 3px;
+  border-color: color-mix(in srgb, var(--cover-ink) 65%, transparent);
 }
 .cover .face__inner { inset: 13% 11% 13% 13%; display: grid; place-content: center; text-align: center; gap: .7em; overflow: hidden; }
 .cover__kicker { margin: 0; font-style: italic; font-size: 1.1em; }
 .cover__title {
   margin: 0; font-size: var(--title); text-transform: uppercase; letter-spacing: -.04em;
-  line-height: .95; color: var(--milk); overflow-wrap: anywhere;
+  line-height: .95; color: var(--cover-ink); overflow-wrap: anywhere;
 }
 .cover__desc { margin: 0; font-style: italic; font-size: 1.15em; line-height: 1.4; }
-.cover .ornament { color: var(--milk); }
+.cover .ornament { color: var(--cover-ink); }
 
 /* ---------- polaroids ---------- */
 .page-photos { display: grid; gap: calc(var(--u) * 2.2); align-content: center; min-height: 100%; padding: .6em .3em; }
@@ -218,4 +236,14 @@ body.read {
 
 @media (prefers-reduced-motion: reduce) {
   .book { --flip: .01s; }
+}
+
+.music-toggle {
+    padding: 9px 16px;
+    border: 1px solid currentColor;
+    border-radius: 20px;
+    background: transparent;
+    color: inherit;
+    cursor: pointer;
+    font: inherit;
 }

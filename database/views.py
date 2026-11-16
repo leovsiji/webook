@@ -6,7 +6,8 @@ from django.contrib.auth.hashers import make_password
 from django.utils.text import slugify
 from django.views.decorators.http import require_POST
 from .models import Book, Page, Photo
-from .forms import PhotoForm
+from .forms import PhotoForm,MusicForm
+from django.http import JsonResponse
 
 def user_login(request):
     if request.method == "POST":
@@ -220,3 +221,36 @@ def reader(request, slug):
 
     pages = book.pages.order_by("order").prefetch_related("photos")
     return render(request, "reader.html", {"book": book, "pages": pages})
+
+@login_required
+@require_POST
+def set_cover_color(request, book_id):
+    book = get_object_or_404(Book, id=book_id, owner=request.user)
+    color = request.POST.get("color", "")
+    if not re.fullmatch(r"#[0-9a-fA-F]{6}", color):
+        return JsonResponse({"ok": False}, status=400)
+    book.cover_color = color.upper()
+    book.save(update_fields=["cover_color"])
+    return JsonResponse({"ok": True})
+
+@login_required
+def upload_music(request, book_id):
+    book = get_object_or_404(Book, id=book_id, owner=request.user)
+
+    form = MusicForm(request.POST or None, request.FILES or None)
+
+    if request.method == "POST" and form.is_valid():
+        old_music = book.music.name if book.music else None
+
+        book.music = form.cleaned_data["music"]
+        book.save()
+
+        if old_music:
+            book.music.storage.delete(old_music)
+
+        return redirect("book_pages", book_id=book.id)
+
+    return render(request, "upload_music.html", {
+        "book": book,
+        "form": form
+    })

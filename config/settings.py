@@ -11,8 +11,10 @@ https://docs.djangoproject.com/en/6.1/ref/settings/
 """
 
 from pathlib import Path
+from dotenv import load_dotenv
 import os
 
+load_dotenv()
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -38,9 +40,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'database',
     'receiver',
     "database.apps.DatabaseConfig",
+    "storages"
 ]
 
 MIDDLEWARE = [
@@ -136,3 +138,25 @@ MEDIA_ROOT = BASE_DIR / "media"
 
 LOGIN_URL = "login"
 LOGIN_REDIRECT_URL = "my_books"
+
+STORAGES = {
+    "default": {
+        "BACKEND": "storages.backends.s3.S3Storage",
+        "OPTIONS": {
+            "access_key": os.getenv("SUPABASE_S3_ACCESS_KEY"),
+            "secret_key": os.getenv("SUPABASE_S3_SECRET_KEY"),
+            "bucket_name": os.getenv("SUPABASE_S3_BUCKET"),
+            "region_name": os.getenv("SUPABASE_S3_REGION"),
+            "endpoint_url": os.getenv("SUPABASE_S3_ENDPOINT"),
+            "addressing_style": "path",
+            "signature_version": "s3v4",
+            "default_acl": None,
+            "querystring_auth": True,
+            "querystring_expire": 3600,
+            "file_overwrite": False,
+        },
+    },
+    "staticfiles": {
+        "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+    },
+}

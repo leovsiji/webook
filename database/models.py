@@ -9,6 +9,7 @@ class Book(models.Model):
     slug = models.SlugField(unique=True)
     passcode = models.CharField(max_length=120)
     status = models.BooleanField(default=False)
+    music = models.FileField(upload_to="music/", blank=True, null=True)
 
     def __str__(self):
         return self.title

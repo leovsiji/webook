@@ -7,16 +7,18 @@
 .shelf { display: grid; gap: 2.4rem 1.8rem; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); }
 .webook-card { display: flex; flex-direction: column; gap: .9rem; }
 
+/* each cover reads --cover-c (set inline from book.cover_color) and --cover-ink */
 .webook-card__cover {
   position: relative; display: flex; flex-direction: column; justify-content: space-between;
   aspect-ratio: 3 / 4; padding: 2rem 1.5rem 1.5rem 2.1rem;
-  background: var(--cover-rose); color: var(--milk); text-decoration: none;
+  background: var(--cover-rose); color: var(--cover-ink, var(--milk)); text-decoration: none;
   border-radius: 4px 14px 14px 4px; box-shadow: 8px 10px 0 var(--wine-deep);
   transition: transform .2s ease;
 }
 .webook-card__cover::after {
   content: ""; position: absolute; inset: 9px 9px 9px 15px; pointer-events: none;
   border: 1.5px dashed rgba(244,236,235,.6); border-radius: 3px 10px 10px 3px;
+  border-color: color-mix(in srgb, var(--cover-ink, #F4ECEB) 60%, transparent);
 }
 .webook-card__cover:hover { transform: translateY(-4px) rotate(-.6deg); }
 .webook-card__spine {
@@ -117,3 +119,46 @@
 }
 .preview-dialog::backdrop { background: #2e060c; }
 .preview-stage { min-height: 100%; display: flex; align-items: center; justify-content: center; padding: .8rem .5rem 1.2rem; }
+
+/* ---------- cover banner (click to change the book colour) ---------- */
+.editor-head > .cover-banner { flex: 1 1 420px; min-width: 0; }
+.cover-banner { --cover-c: #B76E79; --cover-ink: #F4ECEB; position: relative; }
+
+.cover-banner__main {
+  position: relative; cursor: pointer; overflow: hidden;
+  padding: clamp(1rem, 3vw, 1.6rem) clamp(1.2rem, 3vw, 2rem) clamp(1rem, 3vw, 1.6rem) calc(clamp(1.2rem, 3vw, 2rem) + 12px);
+  color: var(--cover-ink);
+  background: var(--cover-c);
+  background: var(--noise), linear-gradient(135deg,
+      color-mix(in srgb, var(--cover-c) 80%, white), var(--cover-c) 48%,
+      color-mix(in srgb, var(--cover-c) 78%, black));
+  border-radius: 6px 16px 16px 6px;
+  box-shadow: 6px 8px 0 rgba(20, 0, 5, .45);
+  transition: transform .15s ease;
+}
+.cover-banner__main:hover { transform: translateY(-2px); }
+.cover-banner__main::before {                 /* book spine */
+  content: ""; position: absolute; inset: 0 auto 0 0; width: 14px;
+  background: linear-gradient(to right, rgba(74,10,18,.45), rgba(74,10,18,0));
+}
+.cover-banner__main::after {                  /* stitched border */
+  content: ""; position: absolute; inset: 8px; pointer-events: none;
+  border: 1.5px dashed color-mix(in srgb, var(--cover-ink) 60%, transparent);
+  border-radius: 4px 12px 12px 4px;
+}
+.cover-banner h1 { color: var(--cover-ink); margin: 0 0 .15em; }
+.cover-banner p  { color: var(--cover-ink); margin: 0; font-style: italic; opacity: .9; }
+.cover-banner__hint {
+  display: inline-block; margin-top: .8rem; font: 800 .8rem var(--font-display);
+  letter-spacing: -.01em; opacity: .75;
+}
+
+.cover-picker {
+  position: absolute; z-index: 20; top: calc(100% + 14px); left: 0;
+  width: min(100%, 440px); padding: 1.1rem 1.2rem;
+  background: var(--paper-milk); color: var(--ink);
+  border-radius: 8px; box-shadow: 6px 8px 0 var(--wine-deep);
+}
+.cover-picker[hidden] { display: none; }
+.cover-picker__label { display: block; margin-bottom: .7rem; font: 800 .95rem var(--font-display); letter-spacing: -.01em; }
+.cover-picker__note { display: block; margin-top: .8rem; font-size: .95rem; font-style: italic; color: var(--ink-soft); }

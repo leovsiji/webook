@@ -3,7 +3,7 @@ from .views import (
     create_book, create_page, book_pages,
     delete_page, edit_page, delete_book, edit_book,
     register, user_login, my_books, add_photo,
-    delete_photo
+    delete_photo,set_cover_color,upload_music
 )
 
 urlpatterns = [
@@ -19,4 +19,6 @@ urlpatterns = [
     path("my-books/", my_books, name="my_books"),
     path("page/<int:page_id>/photo/add/", add_photo, name="add_photo"),
     path("photo/<int:photo_id>/delete/", delete_photo, name="delete_photo"),
+    path("book/<int:book_id>/cover-color/", set_cover_color, name="set_cover_color"),
+    path("book/<int:book_id>/music/", upload_music, name="upload_music"),
 ]

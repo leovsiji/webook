@@ -1,0 +1,24 @@
+
+{% extends "base.html" %}
+
+{% block title %}Upload Music · Webook{% endblock %}
+
+{% block content %}
+<div class="form-card">
+    <h1>Book Music</h1>
+    <p>Upload background music for "{{ book.title }}".</p>
+
+    {% if book.music %}
+        <p>Current music: {{ book.music.name }}</p>
+    {% endif %}
+
+    <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.as_p }}
+
+        <button type="submit">Upload Music</button>
+    </form>
+
+    <a href="{% url 'book_pages' book.id %}">Back to book</a>
+</div>
+{% endblock %}

@@ -1,7 +1,49 @@
 {% extends "base.html" %}
 {% block title %}Edit Webook · Webook{% endblock %}
 
+<header class="editor-head">
+  <div class="cover-banner" data-cover-banner
+       data-cover="{{ book.cover_color|default:'#B76E79' }}"
+       data-url="{% url 'set_cover_color' book.id %}">
+    <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+
+    <div class="cover-banner__main" role="button" tabindex="0"
+         aria-expanded="false" aria-controls="cover-picker" data-banner-toggle>
+      <h1>{{ book.title }}</h1>
+      <p>{{ book.description }}</p>
+      <span class="cover-banner__hint">🎨 Click to change the cover colour</span>
+    </div>
+
+    <div class="cover-picker" id="cover-picker" hidden>
+      <span class="cover-picker__label">Cover colour</span>
+      <div class="swatches">
+        {% for c in "#B76E79 #7B1E2B #6D3A6B #2F4B7C #2E7D7A #3F6B4B #C9A24B #D9783F #E8A0B4 #F4ECEB #3A3A40"|make_list %}{% endfor %}
+        <button type="button" class="swatch" data-color="#B76E79" style="background:#B76E79" aria-label="Rose"></button>
+        <button type="button" class="swatch" data-color="#7B1E2B" style="background:#7B1E2B" aria-label="Wine"></button>
+        <button type="button" class="swatch" data-color="#6D3A6B" style="background:#6D3A6B" aria-label="Plum"></button>
+        <button type="button" class="swatch" data-color="#2F4B7C" style="background:#2F4B7C" aria-label="Navy"></button>
+        <button type="button" class="swatch" data-color="#2E7D7A" style="background:#2E7D7A" aria-label="Teal"></button>
+        <button type="button" class="swatch" data-color="#3F6B4B" style="background:#3F6B4B" aria-label="Forest"></button>
+        <button type="button" class="swatch" data-color="#C9A24B" style="background:#C9A24B" aria-label="Gold"></button>
+        <button type="button" class="swatch" data-color="#D9783F" style="background:#D9783F" aria-label="Orange"></button>
+        <button type="button" class="swatch" data-color="#E8A0B4" style="background:#E8A0B4" aria-label="Pink"></button>
+        <button type="button" class="swatch" data-color="#F4ECEB" style="background:#F4ECEB" aria-label="Cream"></button>
+        <button type="button" class="swatch" data-color="#3A3A40" style="background:#3A3A40" aria-label="Charcoal"></button>
+        <label class="swatch swatch--custom" aria-label="Pick any colour">
+          <input type="color" data-custom-color value="#b76e79">
+        </label>
+      </div>
+      <span class="cover-picker__note" data-picker-note>Changes the preview and the shared Webook.</span>
+    </div>
+  </div>
+
+  <div class="editor-actions">
+    <!-- keep your existing buttons here: Share, Preview, Edit Webook, Delete Webook -->
+  </div>
+</header>
+
 {% block content %}
+<div class="reader" data-reader data-cover="{{ book.cover_color|default:'#B76E79' }}">
 <div class="form-card">
   <h1>Edit Webook</h1>
   <p class="form-card__note">Change the title, passcode or publish status of this memory book.</p>

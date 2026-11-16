@@ -46,7 +46,6 @@
     radial-gradient(ellipse at 50% 30%, #faf4f2 0%, #F4ECEB 60%, #e9d9d3 100%);
   --paper-wine: var(--noise), var(--dots-milk),
     linear-gradient(160deg, #7b2833, #5c1520 60%, #4a0f18);
-  --cover-rose: var(--noise), linear-gradient(135deg, #cb858f, #B76E79 48%, #9c5360);
 }
 
 *, *::before, *::after { box-sizing: border-box; }
@@ -171,13 +170,49 @@ img { max-width: 100%; }
 .form-card--center .form-actions { justify-content: center; }
 .heart-big { display: block; font-size: 3rem; line-height: 1; color: var(--rose); margin-bottom: .4rem; }
 
+/* ---------- cover colour: every cover reads --cover-c (the book's colour) ---------- */
+.reader, .webook-card__cover, .cover-preview {
+  --cover-c: #B76E79;                 /* JS sets this from data-cover (validated #rrggbb) */
+  --cover-ink: #F4ECEB;               /* text on the cover: light, or dark on pale covers */
+  --cover-rose: var(--noise), linear-gradient(135deg,
+      color-mix(in srgb, var(--cover-c) 80%, white), var(--cover-c) 48%,
+      color-mix(in srgb, var(--cover-c) 78%, black));
+}
+@supports not (color: color-mix(in srgb, red, blue)) {
+  .reader, .webook-card__cover, .cover-preview { --cover-rose: var(--noise), linear-gradient(135deg, var(--cover-c), var(--cover-c)); }
+}
+
+/* ---------- cover colour picker (edit / create Webook) ---------- */
+.color-field { margin: 0 0 1.4rem; }
+.color-field__label { display: block; font: 800 .95rem var(--font-display); letter-spacing: -.01em; margin-bottom: .6rem; }
+.color-field__row { display: flex; align-items: center; gap: 1.2rem; flex-wrap: wrap; }
+.cover-preview {
+  position: relative; display: grid; place-items: center; text-align: center; padding: .6rem;
+  width: 84px; aspect-ratio: 3 / 4; flex: none;
+  background: var(--cover-rose); color: var(--cover-ink);
+  border-radius: 3px 8px 8px 3px; box-shadow: 4px 5px 0 rgba(74,10,18,.25);
+  font: 800 .72rem/1.05 var(--font-display); letter-spacing: -.03em; text-transform: uppercase; overflow-wrap: anywhere;
+}
+.cover-preview::before { content: ""; position: absolute; inset: 0 auto 0 0; width: 8px; border-radius: 3px 0 0 3px; background: linear-gradient(to right, rgba(74,10,18,.35), transparent); }
+.swatches { display: flex; flex-wrap: wrap; gap: .6rem; align-items: center; }
+.swatch {
+  position: relative; width: 2.3rem; height: 2.3rem; padding: 0; border: 0; border-radius: 50%; cursor: pointer;
+  box-shadow: 0 0 0 2px #fff, 0 0 0 3px rgba(74,10,18,.25);
+  transition: transform .15s ease;
+}
+.swatch:hover { transform: scale(1.1); }
+.swatch.is-active { box-shadow: 0 0 0 2px #fff, 0 0 0 5px var(--rose-deep); }
+.swatch--custom { background: conic-gradient(#ff5d5d, #ffd45d, #7dff5d, #5dfff1, #5d7dff, #d45dff, #ff5d5d); overflow: hidden; }
+.swatch--custom input { position: absolute; inset: -6px; width: calc(100% + 12px); height: calc(100% + 12px); opacity: 0; cursor: pointer; border: 0; padding: 0; }
+.form-card__hint { font-weight: 400; font-style: italic; color: var(--ink-soft); }
+
 /* ===================== reader styles ===================== */
 /* ==========================================================
    Reader — scrapbook memory book
    Two-page spread everywhere (wine photo page + milk text page).
    Phone: bigger spread, no buttons, swipe to turn; held upright the
-   whole book turns to the left like an open book.
-   --u = 1% of book width (set in reader.js)
+   whole book turns to the left automatically so it is always landscape.
+   --u = 1% of book width (set in the script below)
    ========================================================== */
 body.reader {
   background-color: var(--wine);
@@ -186,15 +221,21 @@ body.reader {
     radial-gradient(ellipse at 50% 30%, #6b1d28 0%, #4a0a12 55%, #2e060c 100%);
   background-size: 26px 26px, auto;
   overflow-x: hidden;
+  overscroll-behavior: none;
 }
+/* while the book is turned sideways the page itself must not scroll */
+body.reader.is-locked { position: fixed; inset: 0; width: 100%; overflow: hidden; }
+
 .reader-main {
   min-height: 100vh; min-height: 100dvh;
   display: flex; align-items: center; justify-content: center;
   padding: .8rem .5rem 1.2rem;
 }
 .reader {
-  --box-w: 100vw;
-  --box-h: 100vh;                        /* the box the book must fit in */
+  /* --vw / --vh are the real visible screen size in px, set by the script;
+     the fallbacks apply until it runs */
+  --box-w: var(--vw, 100vw);
+  --box-h: var(--vh, 100vh);             /* the box the book must fit in */
   --chrome: 190px;                       /* space used by bar + buttons */
   --asp: 1.5;                            /* spread width / height */
   --fit: .94;                            /* how much of the box the book may fill */
@@ -222,6 +263,7 @@ body.reader {
   perspective: 2600px;
   transition: transform var(--flip);
   visibility: hidden;
+  touch-action: manipulation; -webkit-tap-highlight-color: transparent;
 }
 .book.is-ready { visibility: visible; }
 .book.is-closed-front { transform: translateX(-25%); }
@@ -236,7 +278,7 @@ body.reader {
 .book__back, .leaf { position: absolute; top: 0; left: 50%; width: 50%; height: 100%; }
 .book__back {
   display: grid; place-items: center; border-radius: 0 12px 12px 0;
-  background: var(--cover-rose); color: var(--milk); font-size: calc(var(--u) * 7);
+  background: var(--cover-rose); color: var(--cover-ink); font-size: calc(var(--u) * 7);
 }
 
 .leaf { transform-origin: left center; transform-style: preserve-3d; transition: transform var(--flip); }
@@ -288,7 +330,7 @@ body.reader {
 
 /* ---------- cover ---------- */
 .cover {
-  background: var(--cover-rose); color: var(--milk); cursor: pointer;
+  background: var(--cover-rose); color: var(--cover-ink); cursor: pointer;
   border-radius: 4px 14px 14px 4px;
   box-shadow: inset 0 0 calc(var(--u) * 2.5) rgba(74,10,18,.4);
   font-family: var(--font-body); font-size: max(11px, calc(var(--u) * var(--k)));
@@ -299,40 +341,59 @@ body.reader {
 }
 .cover::after {
   content: ""; position: absolute; inset: 5.5%; pointer-events: none;
-  border: 1.5px dashed rgba(244,236,235,.65); border-radius: 3px 10px 10px 3px;
+  border: 1.5px dashed color-mix(in srgb, var(--cover-ink) 65%, transparent); border-radius: 3px 10px 10px 3px;
 }
 .cover .face__inner { inset: 13% 11% 13% 13%; display: grid; place-content: center; text-align: center; gap: .7em; overflow: hidden; }
 .cover__kicker { margin: 0; font-style: italic; font-size: 1.1em; }
 .cover__title {
   margin: 0; font-size: var(--title); text-transform: uppercase; letter-spacing: -.04em;
-  line-height: .95; color: var(--milk); overflow-wrap: anywhere;
+  line-height: .95; color: var(--cover-ink); overflow-wrap: anywhere;
 }
 .cover__desc { margin: 0; font-style: italic; font-size: 1.15em; line-height: 1.4; }
-.cover .ornament { color: var(--milk); }
+.cover .ornament { color: var(--cover-ink); }
 
-/* ---------- polaroids ---------- */
-.page-photos { display: grid; gap: calc(var(--u) * 2.2); align-content: center; min-height: 100%; padding: .6em .3em; }
-.page-photos[data-count="1"], .page-photos[data-count="2"] { grid-template-columns: 1fr; }
-.page-photos[data-count="3"], .page-photos[data-count="4"] { grid-template-columns: 1fr 1fr; }
-.page-photos:not([data-count="1"]):not([data-count="2"]):not([data-count="3"]):not([data-count="4"]) {
-  grid-template-columns: 1fr 1fr; align-content: start;
-}
+/* ---------- polaroid collage: a ready-made layout for 1–3 photos per page ---------- */
+.page-photos { position: relative; width: 100%; height: 100%; }
 .page-photos figure {
-  position: relative; margin: 0; padding: .5em .5em 1.2em; background: var(--milk);
-  box-shadow: 0 3px 10px rgba(20, 0, 5, .5); transform: rotate(-1.8deg);
+  position: absolute; left: var(--x, 10%); top: var(--y, 10%); width: var(--w, 46%); margin: 0;
+  padding: .5em .5em 1.2em; background: var(--milk);
+  box-shadow: 0 3px 10px rgba(20, 0, 5, .5);
+  transform: translateY(var(--ty, 0)) rotate(var(--r, 0deg));
 }
-.page-photos figure:nth-child(even) { transform: rotate(1.6deg); }
+.page-photos figure:nth-child(1) { z-index: 1; }
+.page-photos figure:nth-child(2) { z-index: 2; }
+.page-photos figure:nth-child(3) { z-index: 3; }
+.page-photos figure:nth-child(4) { z-index: 4; }
+.page-photos figure:nth-child(5) { z-index: 5; }
+.page-photos figure:nth-child(6) { z-index: 6; }
 .page-photos figure::before {                 /* washi tape */
   content: ""; position: absolute; top: -.7em; left: 50%; width: 3.4em; height: 1.2em;
   transform: translateX(-50%) rotate(-4deg); background: rgba(183,110,121,.85);
 }
 .page-photos figure:nth-child(even)::before { transform: translateX(-50%) rotate(4deg); background: rgba(217,164,171,.8); }
-.page-photos img { display: block; width: 100%; object-fit: cover; aspect-ratio: 1 / 1; }
-.page-photos[data-count="1"] img { aspect-ratio: 5 / 4; }
-.page-photos[data-count="2"] img { aspect-ratio: 16 / 9; }
+.page-photos img { display: block; width: 100%; object-fit: cover; aspect-ratio: var(--ar, 4 / 3); }
 .page-photos figcaption {
-  font: 500 1.25em/1.15 var(--font-hand); text-align: center; margin-top: .35em; color: var(--wine-soft);
+  font: 500 1.1em/1.15 var(--font-hand); text-align: center; margin-top: .3em; color: var(--wine-soft);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
+.face__inner.is-collage { overflow: visible; }
+.paper--wine { overflow: hidden; }
+
+/* desktop / tablet layouts (photo area is a tall page) */
+.page-photos[data-count="1"] figure:nth-child(1) { --x:8%; --y:50%; --w:84%; --r:-3deg; --ar:1 / 1; --ty:-50%; }
+.page-photos[data-count="2"] figure:nth-child(1) { --x:0%; --y:0%; --w:72%; --r:-4deg; --ar:4 / 3; }
+.page-photos[data-count="2"] figure:nth-child(2) { --x:28%; --y:50%; --w:72%; --r:3deg; --ar:4 / 3; }
+.page-photos[data-count="3"] figure:nth-child(1) { --x:0%; --y:0%; --w:56%; --r:-4deg; --ar:4 / 3; }
+.page-photos[data-count="3"] figure:nth-child(2) { --x:44%; --y:30%; --w:56%; --r:3deg; --ar:4 / 3; }
+.page-photos[data-count="3"] figure:nth-child(3) { --x:0%; --y:60%; --w:56%; --r:-3deg; --ar:4 / 3; }
+
+/* phone layouts (photo area is nearly square) */
+.reader.is-phone .page-photos[data-count="1"] figure:nth-child(1) { --x:12%; --y:50%; --w:76%; --r:-3deg; --ar:1 / 1; --ty:-50%; }
+.reader.is-phone .page-photos[data-count="2"] figure:nth-child(1) { --x:0%; --y:3%; --w:54%; --r:-4deg; --ar:4 / 3; }
+.reader.is-phone .page-photos[data-count="2"] figure:nth-child(2) { --x:46%; --y:46%; --w:54%; --r:3deg; --ar:4 / 3; }
+.reader.is-phone .page-photos[data-count="3"] figure:nth-child(1) { --x:0%; --y:0%; --w:50%; --r:-4deg; --ar:4 / 3; }
+.reader.is-phone .page-photos[data-count="3"] figure:nth-child(2) { --x:50%; --y:25%; --w:50%; --r:3deg; --ar:4 / 3; }
+.reader.is-phone .page-photos[data-count="3"] figure:nth-child(3) { --x:0%; --y:50%; --w:50%; --r:-3deg; --ar:4 / 3; }
 
 /* ---------- controls ---------- */
 .reader-nav { display: flex; align-items: center; gap: 1.2rem; color: var(--text-soft); }
@@ -357,7 +418,7 @@ body.reader {
   .reader-nav__btn { width: 2.4rem; height: 2.4rem; font-size: 1.2rem; }
 }
 
-/* ---------- phones (reader.js adds .is-phone on small touch screens) ----------
+/* ---------- phones (the script adds .is-phone on small touch screens) ----------
    Bigger, wider book so the words are readable, no arrow buttons: swipe to turn. */
 .reader.is-phone { --asp: 2; --fit: .965; --chrome: 48px; gap: .4rem; position: relative; }
 .reader.is-phone .book { --k: 2; }
@@ -367,52 +428,32 @@ body.reader {
 .reader.is-phone .face--back  .face__inner { inset: 6% 9% 9% 6%; }
 .reader.is-phone .cover .face__inner { inset: 11% 9% 11% 11%; }
 .reader.is-phone .paper h2 { font-size: 1.6em; }
-.reader.is-phone .page-photos[data-count="2"] { grid-template-columns: 1fr 1fr; }
-.reader.is-phone .page-photos[data-count="2"] img { aspect-ratio: 1 / 1; }
 .reader.is-phone .reader-nav__btn { display: none; }
 .reader.is-phone .reader-nav__status { min-width: 0; font-size: .9rem; }
 .reader.is-phone .reader-bar { position: absolute; top: .3rem; right: .6rem; width: auto; min-height: 0; z-index: 3; }
 .reader.is-phone .reader-bar__title { display: none; }
 
-/* phone held upright: the whole book is turned to the left (-90°) so it lies open like a real book.
-   Turn the phone to match and it becomes natively landscape. */
+/* page label becomes a tiny floating tag on phones */
+.reader.is-phone .reader-nav { position: absolute; bottom: .25rem; left: 0; right: 0; justify-content: center; pointer-events: none; }
+.reader.is-phone .reader-nav__status { font-size: .75rem; opacity: .7; }
+
+/* phone held upright: the whole book is turned to the left (-90°) automatically so it
+   lies open like a real book. Turn the phone to match and it becomes natively landscape.
+   --vw / --vh = real visible screen size in px (set by the script), so it never
+   overflows behind the browser toolbar. */
 .reader.is-rotated {
   position: fixed; top: 0; left: 0; z-index: 5;
-  width: 100vh; height: 100vw;
-  transform-origin: top left; transform: translateY(100vh) rotate(-90deg);
-  --box-w: 100vh; --box-h: 100vw; justify-content: center;
-}
-@supports (height: 100dvh) {
-  .reader { --box-h: 100dvh; }
-  .reader.is-rotated {
-    width: 100dvh; transform: translateY(100dvh) rotate(-90deg);
-    --box-w: 100dvh; --box-h: 100vw;
-  }
+  width: var(--vh, 100vh); height: var(--vw, 100vw);
+  transform-origin: top left;
+  transform: translateY(var(--vh, 100vh)) rotate(-90deg);
+  --box-w: var(--vh, 100vh); --box-h: var(--vw, 100vw);
+  justify-content: center;
 }
 
 @media (prefers-reduced-motion: reduce) {
   .book { --flip: .01s; }
 }
 
-/* ---------- phone polish ---------- */
-body.reader { overscroll-behavior: none; }
-.book { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
-
-/* no arrows, no hint: swipe only; page label becomes a tiny floating tag */
-.reader.is-phone .reader-nav { position: absolute; bottom: .25rem; left: 0; right: 0; justify-content: center; pointer-events: none; }
-.reader.is-phone .reader-nav__status { font-size: .75rem; opacity: .7; }
-.reader.is-phone .reader-hint { display: none; }
-
-/* "tap to open" gate (phones only) */
-.gate {
-  position: fixed; inset: 0; z-index: 50; display: flex; flex-direction: column;
-  align-items: center; justify-content: center; gap: 1rem; text-align: center; padding: 2rem;
-  background: var(--wine); background-image: radial-gradient(ellipse at 50% 30%, #6b1d28 0%, #2e060c 100%);
-  cursor: pointer; border: 0; width: 100%; color: var(--milk); font: inherit;
-}
-.gate__heart { font-size: 4rem; color: var(--rose); line-height: 1; }
-.gate__title { font: 800 1.8rem/1.1 var(--font-display); letter-spacing: -.03em; }
-.gate__sub { font-style: italic; color: var(--text-soft); margin: 0; }
   </style>
 </head>
 <body class="reader">
@@ -433,12 +474,22 @@ body.reader { overscroll-behavior: none; }
   </form>
 </div>
 {% else %}
-<div class="reader" data-reader>
+<div class="reader" data-reader data-cover="{{ book.cover_color|default:'#B76E79' }}">
 
   <div class="reader-bar">
     <span class="reader-bar__title">{{ book.title }}</span>
     <!-- music mute / unmute button goes here later -->
-    <div class="reader-bar__music" data-music-slot></div>
+    <div class="reader-bar__music" data-music-slot>
+      {% if book.music %}
+          <audio id="bookMusic" autoplay loop playsinline preload="auto">
+              <source src="{{ book.music.url }}">
+          </audio>
+
+          <button type="button" id="musicToggle" class="btn btn--ghost btn--small">
+              Mute
+          </button>
+      {% endif %}
+    </div>
   </div>
 
   <div class="book" data-book>
@@ -481,12 +532,6 @@ body.reader { overscroll-behavior: none; }
 
   <noscript><p class="reader-noscript">Please enable JavaScript to open this Webook.</p></noscript>
 </div>
-
-<button class="gate" type="button" data-gate hidden>
-  <span class="gate__heart" aria-hidden="true">♥</span>
-  <span class="gate__title">{{ book.title }}</span>
-  <p class="gate__sub">Tap to open your Webook in landscape</p>
-</button>
 {% endif %}
 
 </main>
@@ -504,9 +549,8 @@ body.reader { overscroll-behavior: none; }
      cover │ side 1 · side 2 │ side 3 · side 4 │ … │ The End │ back cover
 
    A leaf's back is the LEFT page, the next leaf's front is the RIGHT page.
-   Phones: a "Tap to open" gate goes fullscreen and locks landscape (Android);
-   where locking isn't allowed (iPhone) the whole book is turned to the left
-   like an open book (.is-rotated). Swipe to turn pages.
+   Phones: a bigger, wider spread with no buttons (swipe). Held upright, the whole
+   book is turned to the left automatically (.is-rotated) so it is always landscape.
 
    The flip is a CSS 3D transform; JS only toggles classes.
    ========================================================== */
@@ -525,30 +569,29 @@ body.reader { overscroll-behavior: none; }
   /* ---------- phones ----------
      is-phone   : small touch screen -> bigger book, no arrow buttons, swipe to turn
      is-rotated : phone held upright -> the whole book is turned to the left (see CSS) */
-  const touch = (navigator.maxTouchPoints || 0) > 0;
-  let rot = false, phone = false, entered = false;
-  const gate = document.querySelector('[data-gate]');
-
+  const touch = (navigator.maxTouchPoints || 0) > 0 || matchMedia('(pointer: coarse)').matches;
+  let rot = false, phone = false;
   function syncDevice() {
     const w = window.innerWidth, h = window.innerHeight;
+    root.style.setProperty('--vw', w + 'px');   // real visible size, used by the CSS
+    root.style.setProperty('--vh', h + 'px');
     phone = touch && Math.min(w, h) <= 760;
-    rot = phone && w < h;                      // upright phone -> rotate book with CSS
+    rot = phone && w < h;                       // upright phone -> rotate book with CSS
     root.classList.toggle('is-phone', phone);
     root.classList.toggle('is-rotated', rot);
-    if (gate) gate.hidden = !(phone && !entered);
+    document.body.classList.toggle('is-locked', rot);
     if (typeof render === 'function' && typeof current === 'number') render();
   }
 
-  if (gate) gate.addEventListener('click', async () => {
-    entered = true;
-    gate.hidden = true;
-    try {
-      const de = document.documentElement;
-      if (de.requestFullscreen) await de.requestFullscreen({ navigationUI: 'hide' });
-      if (screen.orientation && screen.orientation.lock) await screen.orientation.lock('landscape');
-    } catch (_) { /* iPhone / blocked: CSS rotation fallback takes over */ }
-    setTimeout(syncDevice, 150);
-  });
+  /* ---------- cover colour (set per Webook in the editor) ---------- */
+  (function applyCover() {
+    const c = root.dataset.cover || '';
+    if (!/^#[0-9a-fA-F]{6}$/.test(c)) return;               // ignore anything that is not #rrggbb
+    const n = parseInt(c.slice(1), 16);
+    const lum = (0.299 * (n >> 16) + 0.587 * ((n >> 8) & 255) + 0.114 * (n & 255)) / 255;
+    root.style.setProperty('--cover-c', c);
+    root.style.setProperty('--cover-ink', lum > 0.62 ? '#3a0a12' : '#F4ECEB');   // dark text on pale covers
+  })();
 
   const FLIP_MS = 1100;
   const N = sources.length;
@@ -561,8 +604,20 @@ body.reader { overscroll-behavior: none; }
     return n;
   };
   const part = (src, name) => src.querySelector(`[data-part="${name}"]`);
+  const textOf  = (src) => part(src, 'text').textContent.trim();
+  const titleOf = (src) => part(src, 'title').textContent.trim();
   const hasPhotos = (src) => { const p = part(src, 'photos'); return !!(p && p.children.length); };
-  const photosClone = (src) => part(src, 'photos').cloneNode(true);
+  const MAX_PHOTOS = 3;                     // 3 big polaroids per page; more photos continue on the next page
+  const chunkSizes = (n) => {
+    const k = Math.ceil(n / MAX_PHOTOS), base = Math.floor(n / k), extra = n % k;
+    return Array.from({ length: k }, (_, i) => base + (i < extra ? 1 : 0));
+  };
+  const photosClone = (d) => {              // d = { src, from, to }
+    const c = part(d.src, 'photos').cloneNode(true);
+    [...c.children].forEach((f, i) => { if (i < d.from || i >= d.to) f.remove(); });
+    c.dataset.count = String(d.to - d.from);
+    return c;
+  };
 
   const face = (kind, cls, ...children) => {
     const f = el('div', `face face--${kind} ${cls}`);
@@ -587,25 +642,46 @@ body.reader { overscroll-behavior: none; }
   };
 
   /* ---------- the continuous row of sides ---------- */
+  /* A Webook page = its text side first, then its photo sides (max 3 photos each).
+     A page that has photos always starts on a LEFT page and is padded to an even number of
+     sides, so its photos are never shown beside another page's words. Pages without photos
+     simply follow each other. The text side may be empty (photos-only page). */
   const descs = [];
+  const filler = () => descs.push({ type: 'blank' });
   sources.forEach((src, i) => {
     const page = i + 1;
-    if (hasPhotos(src)) descs.push({ type: 'photos', src, page });
-    descs.push({ type: 'text', src, page });
+    const group = [{ type: 'text', src, page }];
+    if (hasPhotos(src)) {
+      let from = 0;
+      chunkSizes(part(src, 'photos').children.length).forEach((size) => {
+        group.push({ type: 'photos', src, page, from, to: from + size });
+        from += size;
+      });
+    }
+    if (group.length > 1) {
+      if (descs.length % 2 === 1) filler();               // start on a left page
+      descs.push(...group);
+      if (group.length % 2 === 1) filler();               // keep the next page on a left page
+    } else {
+      descs.push(group[0]);
+    }
   });
-  if (descs.length % 2 === 1) descs.push({ type: 'blank' });   // keeps "The End" on a left page
+  if (descs.length % 2 === 1) filler();                   // keeps "The End" on a left page
   descs.push({ type: 'end', page: N + 1 });
   descs.forEach((d, i) => { d.n = i + 1; });                   // printed page number
 
   function sideFace(d, kind) {
     if (d.type === 'photos') {
-      const f = face(kind, 'paper paper--wine', photosClone(d.src));
+      const f = face(kind, 'paper paper--wine', photosClone(d));
+      f.firstChild.classList.add('is-collage');
       f.appendChild(folio(d.n, true));
       return f;
     }
     if (d.type === 'text') {
-      const title = el('h2', null, part(d.src, 'title').innerHTML);
-      const text = el('div', 'prose', part(d.src, 'text').innerHTML);
+      const t = titleOf(d.src), x = textOf(d.src);
+      if (!t && !x) return face(kind, 'paper', heartBlock());        // photos-only page without a title
+      const title = t ? el('h2', null, part(d.src, 'title').innerHTML) : null;
+      const text = x ? el('div', 'prose', part(d.src, 'text').innerHTML) : null;
       const f = face(kind, 'paper', title, text);
       f.appendChild(folio(d.n));
       return f;
@@ -697,7 +773,7 @@ body.reader { overscroll-behavior: none; }
     touchX = null;
     const along  = rot ? -dy : dx;     // movement along the book's own x axis (up the screen when turned)
     const across = rot ? dx : dy;
-    if (Math.abs(along) > 35 && Math.abs(along) > Math.abs(across) * 1.2) go(current + (along < 0 ? 1 : -1));
+    if (Math.abs(along) > 45 && Math.abs(along) > Math.abs(across) * 1.4) go(current + (along < 0 ? 1 : -1));
   });
 
   /* ---------- sizing: --u = 1% of book width ---------- */
@@ -710,11 +786,48 @@ body.reader { overscroll-behavior: none; }
 
   syncDevice();
   window.addEventListener('resize', syncDevice);
-  window.addEventListener('orientationchange', syncDevice);
+  window.addEventListener('orientationchange', () => setTimeout(syncDevice, 300));
   book.classList.add('is-ready');
 })();
+
+document.addEventListener("DOMContentLoaded", async () => {
+    const music = document.getElementById("bookMusic");
+    const button = document.getElementById("musicToggle");
+
+    if (!music || !button) return;
+
+    music.muted = false;
+
+    try {
+        await music.play();
+        button.textContent = "Mute";
+    } catch (error) {
+        music.muted = true;
+
+        try {
+            await music.play();
+            button.textContent = "Unmute";
+        } catch (error) {
+            button.textContent = "Unmute";
+        }
+    }
+
+    button.addEventListener("click", () => {
+        music.muted = !music.muted;
+        button.textContent = music.muted ? "Unmute" : "Mute";
+    });
+});
+
+  (function applyCover() {
+    const c = root.dataset.cover || '';
+    if (!/^#[0-9a-fA-F]{6}$/.test(c)) return;
+    const n = parseInt(c.slice(1), 16);
+    const lum = (0.299 * (n >> 16) + 0.587 * ((n >> 8) & 255) + 0.114 * (n & 255)) / 255;
+    root.style.setProperty('--cover-c', c);
+    root.style.setProperty('--cover-ink', lum > 0.62 ? '#3a0a12' : '#F4ECEB');
+  })();
 
 </script>
 {% endif %}
 </body>
-</html> 
+</html>
